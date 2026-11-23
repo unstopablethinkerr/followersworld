@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>FollowVerse — my followers, as a 3D city</title>
+<meta name="description" content="Every Instagram follower gets a home in this 3D city. Search your @id, find your house, fly around in day, night and rain.">
+<meta property="og:title" content="FollowVerse — find your house in my 3D follower city">
+<meta property="og:description" content="Every follower gets a home. Search your @id and fly there.">
+<meta name="theme-color" content="#0e1220">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏙️</text></svg>">
+<style>
+:root{
+  --glass:rgba(14,18,32,.64); --line:rgba(255,255,255,.12); --txt:#eef1f7; --mut:#9aa4b8;
+  --ig:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#0e1220;color:var(--txt);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:#ff7ab6}
+.glass{background:var(--glass);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.28)}
+
+/* brand */
+.brand{position:fixed;top:calc(14px + var(--sat));left:calc(14px + var(--sal));display:flex;gap:12px;align-items:center;padding:10px 16px 10px 10px;z-index:5}
+.brand .logo{width:42px;height:42px;border-radius:12px;background:var(--ig);display:grid;place-items:center;font-size:22px}
+.brand h1{margin:0;font-size:17px;letter-spacing:.2px}
+.brand p{margin:1px 0 0;color:var(--mut);font-size:12.5px}
+.brand p b{color:var(--txt)}
+.brand #count{color:#fff;font-weight:700}
+
+/* toolbar */
+.toolbar{position:fixed;top:calc(14px + var(--sat));right:calc(14px + var(--sar));display:flex;gap:4px;padding:6px;z-index:5;align-items:center}
+.toolbar button{width:40px;height:40px;border-radius:11px;font-size:18px;display:grid;place-items:center;transition:background .2s,transform .15s;position:relative}
+.toolbar button:hover{background:rgba(255,255,255,.1)}
+.toolbar button:active{transform:scale(.92)}
+.toolbar button.on{background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.toolbar .sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.toolbar button[title]:hover::after{content:attr(title);position:absolute;top:46px;right:0;white-space:nowrap;background:#111827;padding:4px 8px;border-radius:7px;font-size:12px;pointer-events:none}
+
+/* minimap */
+#minimap{position:fixed;top:calc(74px + var(--sat));right:calc(14px + var(--sar));width:180px;height:180px;padding:0;z-index:4;cursor:crosshair;overflow:hidden}
+body.nomap #minimap{display:none}
+
+/* panel */
+.panel{position:fixed;left:calc(14px + var(--sal));top:calc(88px + var(--sat));bottom:calc(14px + var(--sab));width:330px;display:flex;flex-direction:column;z-index:5;overflow:hidden}
+.handle{display:none}
+.search{display:flex;align-items:center;gap:8px;margin:12px 12px 8px;padding:0 10px;height:44px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+.search:focus-within{border-color:#d62976;box-shadow:0 0 0 3px rgba(214,41,118,.25)}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font-size:15px}
+.search input::placeholder{color:var(--mut)}
+#qclear{color:var(--mut);font-size:14px;padding:4px}
+.chips{display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap}
+.chips button{padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.chips button.on{background:#fff;color:#111;border-color:#fff}
+.meta{padding:0 14px 6px;color:var(--mut);font-size:12px}
+#list{list-style:none;margin:0;padding:0 6px 6px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+#list li{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:11px;cursor:pointer;transition:background .15s}
+#list li:hover{background:rgba(255,255,255,.07)}
+#list li.on{background:rgba(214,41,118,.22)}
+#list li.empty{cursor:default;color:var(--mut);padding:16px 10px;line-height:1.5}
+.av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;color:#1a1a1a;background:var(--c);box-shadow:0 0 0 2px rgba(14,18,32,.9),0 0 0 4px #d62976}
+.av.big{width:48px;height:48px;font-size:16px}
+.nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.nm b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm small{color:var(--mut);font-size:11.5px}
+.go{color:var(--mut);font-size:20px}
+.pfoot{padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+
+/* card */
+.card{position:fixed;left:50%;bottom:calc(20px + var(--sab));transform:translateX(-50%);width:min(380px,calc(100vw - 24px));padding:16px;z-index:6;animation:pop .28s ease}
+.card[hidden]{display:none}
+@keyframes pop{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+#cardClose{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--mut)}
+.ch{display:flex;gap:12px;align-items:center;padding-right:30px}
+.ch h3{margin:0;font-size:17px;word-break:break-all}
+.ch p{margin:2px 0 0;color:var(--mut);font-size:13px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:14px 0 4px;font-size:13px}
+.kv span{color:var(--mut)}
+.note{margin:10px 0 0;color:#dfe3ec;font-size:13px}
+.acts{display:flex;gap:8px;margin-top:14px}
+.btn{flex:none;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 14px;border-radius:11px;background:rgba(255,255,255,.1);color:var(--txt);text-decoration:none;font-weight:600;font-size:13.5px}
+.btn.ig{flex:1;background:var(--ig);color:#fff}
+.btn:hover{filter:brightness(1.1)}
+
+/* tooltip, hint, toast */
+.tip{position:fixed;left:0;top:0;padding:6px 10px;font-size:12.5px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:7;border-radius:9px;white-space:nowrap}
+.tip.show{opacity:1}
+.hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + var(--sab));padding:8px 14px;border-radius:99px;background:rgba(0,0,0,.45);font-size:12.5px;color:#dfe3ec;z-index:3;transition:opacity .6s;pointer-events:none;white-space:nowrap}
+.hint.gone{opacity:0}
+.toast{position:fixed;left:50%;top:calc(80px + var(--sat));transform:translate(-50%,-10px);padding:9px 16px;border-radius:99px;background:rgba(17,24,39,.92);border:1px solid var(--line);font-size:13px;opacity:0;transition:.25s;z-index:9;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* loader */
+#loader{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#1e2a4d,#0b0f1c 70%);transition:opacity .8s,visibility .8s}
+#loader.done{opacity:0;visibility:hidden}
+.ld-box{text-align:center;padding:24px;max-width:340px}
+.ld-logo{width:74px;height:74px;margin:0 auto 14px;border-radius:22px;background:var(--ig);display:grid;place-items:center;font-size:38px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.ld-title{font-size:24px;font-weight:800;letter-spacing:.3px}
+.ld-bar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);margin:18px auto 10px;width:220px;overflow:hidden}
+.ld-bar i{display:block;height:100%;width:0;background:var(--ig);transition:width .3s}
+#ldtext{color:var(--mut);font-size:13px}
+
+/* ---------- mobile ---------- */
+@media (max-width:760px){
+  .brand{left:calc(10px + var(--sal));top:calc(10px + var(--sat));padding:6px 12px 6px 6px;gap:9px;border-radius:14px}
+  .brand .logo{width:34px;height:34px;font-size:18px;border-radius:10px}
+  .brand h1{font-size:15px}.brand p{font-size:11.5px}
+  .brand .upd{display:none}
+  .toolbar{top:auto;right:calc(10px + var(--sar));bottom:auto;top:calc(66px + var(--sat));flex-direction:column;padding:4px;gap:2px;border-radius:14px}
+  .toolbar .sep{width:24px;height:1px;margin:3px 0}
+  .toolbar button{width:38px;height:38px;font-size:17px}
+  .toolbar button[title]:hover::after{display:none}
+  #btnFull{display:none!important}
+  #minimap{top:auto;bottom:calc(86px + var(--sab));right:calc(10px + var(--sar));width:120px;height:120px}
+  .panel{left:calc(8px + var(--sal));right:calc(8px + var(--sar));width:auto;top:auto;bottom:calc(8px + var(--sab));height:66px;transition:height .32s cubic-bezier(.2,.8,.2,1);border-radius:18px}
+  .panel.open{height:min(62vh,560px)}
+  .handle{display:block;position:absolute;top:5px;left:50%;transform:translateX(-50%);width:44px;height:5px;border-radius:9px;background:rgba(255,255,255,.3);cursor:pointer}
+  .handle::before{content:"";position:absolute;inset:-12px -30px}
+  .search{margin:12px 10px 8px;height:42px}
+  .panel:not(.open) .chips,.panel:not(.open) .meta,.panel:not(.open) #list,.panel:not(.open) .pfoot{display:none}
+  .card{bottom:calc(84px + var(--sab));padding:14px}
+  .panel.open ~ .card{display:none}
+  .hint{bottom:calc(84px + var(--sab));font-size:11.5px}
+}
+</style>
+<script type="importmap">
+{ "imports": { "three": "./js/vendor/three.module.min.js", "three/addons/": "./js/vendor/addons/" } }
+</script>
+</head>
+<body>
+<div id="loader"><div class="ld-box"><div class="ld-logo">🏙️</div><div class="ld-title">FollowVerse</div><div class="ld-bar"><i id="ldbar"></i></div><div id="ldtext">Loading the city…</div></div></div>
+
+<canvas id="scene" tabindex="0"></canvas>
+
+<header class="brand glass">
+  <div class="logo">🏙️</div>
+  <div><h1>FollowVerse</h1><p><b id="ownerName">@…</b>'s city · <span id="count">0</span> residents <span class="upd">· <span id="updated"></span></span></p></div>
+</header>
+
+<nav class="toolbar glass" aria-label="View controls">
+  <button data-mood="day" title="Day">☀️</button>
+  <button data-mood="dusk" title="Dusk">🌇</button>
+  <button data-mood="night" title="Night">🌙</button>
+  <button id="btnRain" title="Rain">🌧️</button>
+  <button id="btnAuto" title="Auto (your clock)">🕒</button>
+  <span class="sep"></span>
+  <button id="btnTour" title="Drone tour">🚁</button>
+  <button id="btnLabels" class="on" title="Name tags">🏷️</button>
+  <button id="btnMap" title="Minimap">🗺️</button>
+  <button id="btnShot" title="Screenshot">📸</button>
+  <button id="btnFull" title="Fullscreen">⛶</button>
+</nav>
+
+<canvas id="minimap" class="glass" title="Click to fly there"></canvas>
+
+<aside class="panel glass" id="panel">
+  <div class="handle" id="handle" aria-label="Expand list"></div>
+  <label class="search"><span>🔎</span><input id="q" type="search" placeholder="Find your house — type your @id" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button id="qclear" aria-label="Clear">✕</button></label>
+  <div class="chips" id="chips"><button data-f="all" class="on">All</button><button data-f="home">🏠 Homes</button><button data-f="biz">🏪 Business</button><button data-f="new">✨ Newest</button></div>
+  <div class="meta" id="meta"></div>
+  <ul id="list"></ul>
+  <div class="pfoot">Not in the city? Follow <a id="followLink" target="_blank" rel="noopener" href="#">@…</a> to get your own plot ✨</div>
+</aside>
+
+<section class="card glass" id="card" hidden><button id="cardClose" aria-label="Close">✕</button><div class="body"></div></section>
+<div class="tip glass" id="tip"></div>
+<div class="hint" id="hint">Drag to move · Right-drag / two fingers to rotate · Scroll / pinch to zoom</div>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="./js/world.js"></script>
+</body>
+</html>
