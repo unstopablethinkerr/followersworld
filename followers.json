@@ -1,6 +1,6 @@
 {
   "owner": "unstopablethinkerr",
-  "updated": "2026-11-23",
+  "updated": "2026-11-25",
   "followers": [
     {"id":"nbalajinandha","x":0,"z":-2,"type":"apartment","color":"#c7d3dd","floors":8,"since":"2026-11-23"},
     {"id":"gobala_krishnan","x":1,"z":-2,"type":"apartment","color":"#d8e2dc","floors":6,"since":"2026-11-23"},
@@ -134,7 +134,6 @@
     {"id":"_keerthana_bala_","x":-1,"z":6,"type":"apartment","color":"#b8c0ff","floors":4,"since":"2026-11-23"},
     {"id":"pandu_chunkz","x":-2,"z":7,"type":"house","color":"#c9d6ea","floors":1,"since":"2026-11-23"},
     {"id":"mounika46.__","x":-1,"z":7,"type":"house","color":"#c9d6ea","floors":1,"since":"2026-11-23"},
-    {"id":"_.lingu._","x":-6,"z":6,"type":"villa","color":"#fff4e0","floors":3,"since":"2026-11-23"},
     {"id":"_yas_shuu__","x":-5,"z":6,"type":"house","color":"#e8a87c","floors":2,"since":"2026-11-23"},
     {"id":"annairkrjewellers","x":-6,"z":7,"type":"shop","color":"#9bf6ff","floors":2,"since":"2026-11-23"},
     {"id":"jojodada07","x":-5,"z":7,"type":"house","color":"#f7b2ad","floors":1,"since":"2026-11-23"},
@@ -192,6 +191,9 @@
     {"id":"manisankar2812","x":9,"z":-3,"type":"apartment","color":"#ffcdb2","floors":4,"since":"2026-11-23"},
     {"id":"prasanna_since_2002","x":8,"z":-2,"type":"villa","color":"#f3e9dc","floors":2,"since":"2026-11-23"},
     {"id":"broken12201","x":9,"z":-2,"type":"house","color":"#f4d6a0","floors":1,"since":"2026-11-23"},
-    {"id":"cubernithin","x":8,"z":-1,"type":"house","color":"#f4d6a0","floors":2,"since":"2026-11-23"}
+    {"id":"cubernithin","x":8,"z":-1,"type":"house","color":"#f4d6a0","floors":2,"since":"2026-11-23"},
+    {"id":"mu_sl__7","x":10,"z":-8,"type":"cottage","color":"#d2a679","floors":1,"since":"2026-11-25"},
+    {"id":"obsidian_studios2.0","x":11,"z":-8,"type":"apartment","color":"#e9c46a","floors":4,"since":"2026-11-25"},
+    {"id":"rudra_uruthiran","x":10,"z":-7,"type":"apartment","color":"#d8e2dc","floors":6,"since":"2026-11-25"}
   ]
 }
